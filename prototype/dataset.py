@@ -16,3 +16,9 @@ class Dataset:
 
     def get_by_id(self, id: int) -> dict:
         return next(c for c in self.dataset if c["id"] == id)
+
+    def get_by_name(self, name: str) -> dict:
+        """
+        Returns the first card that matches the name. (case-insensitive partial match)
+        """
+        return next(c for c in self.dataset if name.lower() in c["name"].lower())

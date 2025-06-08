@@ -1,11 +1,11 @@
-from .board import Board, Player
-from .minion import Minion
+from ..board import Board, Player
+from ..minion import Minion
 
 
 class TestPlayer:
     def test_player(self):
-        assert Player.ME == ~Player.ENEMY
-        assert Player.ENEMY == ~Player.ME
+        assert Player.Me == ~Player.Enemy
+        assert Player.Enemy == ~Player.Me
 
 
 class TestBoard:
