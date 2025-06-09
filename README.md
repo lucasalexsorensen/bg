@@ -2,6 +2,13 @@
 
 Hearthstone battlegrounds simulator project
 
+## Tasks
+- [ ] Build a very primitive simulator (maybe vibe code a lot of it)
+- [ ] Build a tool to record data from my own games
+- [ ] Collect a dataset of matchups and their outcomes
+- [ ] Build a validation tool using this dataset
+- [ ] Iterate on the simulator until it's pretty good
+
 
 ## Architecture
 * Minion
@@ -31,6 +38,4 @@ Hearthstone battlegrounds simulator project
   * Effects are invoked as consequence of events
   * Effects can even trigger new consequent events
   * Effects can (and typically do) modify the board
-  * Examples:
-    * `BuffMinion` (triggers a subsequent `MinionBuffed` event)
-    * `SummonBeetle` (triggers a subsequent `MinionSummoned` event)
+  * Examples: deathrattle effects, battlecry effects, etc.
