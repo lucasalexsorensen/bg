@@ -5,7 +5,6 @@ from loguru import logger
 
 from . import events
 from .board import Board, Player
-from .deathrattle import Deathrattle, SummonBeetle
 from .minion import Minion
 
 # random.seed(1337)
@@ -175,57 +174,29 @@ class Simulator:
 
     def handle_event(self, event: events.Event) -> None:
         match event.type:
-            case "minion_summoned":
-                self.logger.info(f"{event.minion_uuid} summoned")
             case "minion_died":
                 minion = next(
                     m
                     for m in self.board.dead_minions[event.player]
                     if m.uuid == event.minion_uuid
                 )
-                if minion.name == "Buzzing Vermin":
-                    for deathrattle in minion.deathrattles:
-                        self.handle_deathrattle(event, deathrattle)
-
-    def handle_deathrattle(
-        self, event: events.MinionDied, deathrattle: Deathrattle
-    ) -> None:
-        player = event.player
-        match deathrattle.type:
-            case "summon_beetle":
-                if not self.board.has_space(player):
-                    return
-
-                attack, health = self.board.metadata[player].beetles
-                beetle = Minion.custom("Beetle", attack=attack, health=health)
-                minion_index = len(self.board.minions[player])
-                self.board.minions[player].insert(minion_index, beetle)
-                self.handle_event(
-                    events.MinionSummoned(
-                        player=player,
-                        minion_uuid=beetle.uuid,
-                        minion_index=minion_index,
-                    )
-                )
-
-            case "summon_cublings":
-                cubs = [Minion.custom("Cubling", attack=0, health=0) for _ in range(2)]
-                for cub in cubs:
-                    if not self.board.has_space(player):
-                        continue
-
-                    minion_index = len(self.board.minions[player])
-                    self.board.minions[player].insert(minion_index, cub)
+                deathrattles = minion.effects["deathrattle"]
+                if deathrattles:
+                    for effect in deathrattles:
+                        self.board.process_effect(event.player, effect)
                     self.handle_event(
-                        events.MinionSummoned(
-                            player=player,
-                            minion_uuid=cub.uuid,
-                            minion_index=minion_index,
+                        events.DeathrattleTriggered(
+                            minion_uuid=minion.uuid,
                         )
                     )
 
-        self.handle_event(
-            events.DeathrattleTriggered(
-                minion_uuid=event.minion_uuid,
-            )
+        minions = (
+            self.board.minions[event.player]  # type: ignore
+            if hasattr(event, "player")
+            else self.board.minions[Player.A] + self.board.minions[Player.B]
         )
+
+        for minion in minions:
+            for effect in minion.effects[event.type]:
+                player = getattr(event, "player", None)
+                self.board.process_effect(player, effect)

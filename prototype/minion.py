@@ -5,12 +5,12 @@ from typing import Callable
 from uuid import UUID, uuid4
 
 from .dataset import Dataset
-from .deathrattle import Deathrattle, SummonBeetle
 
 
 class Keyword(StrEnum):
     """
-    A Bonus Keyword is one of 6 keywords used in Battlegrounds: Divine Shield, Reborn, Stealth, Taunt, Venomous, or Windfury.
+    A Bonus Keyword is one of 6 keywords used in Battlegrounds:
+      Shield, Reborn, Stealth, Taunt, Venomous, or Windfury.
     """
 
     DivineShield = "divine_shield"
@@ -30,7 +30,9 @@ class Minion:
     health: int
     keywords: set[Keyword] = field(default_factory=set)
     attack_count: int = 0
-    deathrattles: list[Deathrattle] = field(default_factory=list)
+    effects: defaultdict[str, list[str]] = field(
+        default_factory=lambda: defaultdict(list)
+    )
 
     def __hash__(self):
         return hash(self.uuid)
@@ -76,7 +78,7 @@ class Minion:
             name=m["name"],
             attack=m["attack"] if attack is None else attack,
             health=m["health"] if health is None else health,
-            deathrattles=deathrattles_from_name(m["name"]),
+            effects=defaultdict(list) | effects_from_name(m["name"]),
         )
 
     @staticmethod
@@ -95,9 +97,19 @@ class Minion:
         )
 
 
-def deathrattles_from_name(name: str) -> list[Deathrattle]:
+def effects_from_name(name: str) -> dict[str, list[str]]:
     match name:
         case "Buzzing Vermin":
-            return [SummonBeetle()]
+            return {"deathrattle": ["summon_beetle"]}
+        case "Manasaber":
+            return {"deathrattle": ["summon_cublings"]}
+        case "Dozy Whelp":
+            return {"pre_attack": ["dozy_whelp"]}
+        case "Misfit Dragonling":
+            return {"start_of_combat": ["misfit_dragonling"]}
+        case "Cord Puller":
+            return {"deathrattle": ["summon_microbot"]}
+        case "Harmless Bonehead":
+            return {"deathrattle": ["summon_skeletons"]}
         case _:
-            return []
+            return {}

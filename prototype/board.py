@@ -37,3 +37,14 @@ class Board:
 
     def has_space(self, player: Player) -> bool:
         return len(self.minions[player]) < 7
+
+    def process_effect(self, player: Player | None, effect: str) -> list[str]:
+        match effect:
+            case "summon_beetle":
+                if not self.has_space(player):
+                    return []
+                pm = self.metadata[player]
+                beetle = Minion.custom("Nick Noren", pm.beetles[0], pm.beetles[1])
+                self.minions[player].insert(0, beetle)
+                return ["minion_summoned"]
+        raise ValueError(f"Unknown effect: {effect}")
