@@ -1,41 +1,39 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
-from enum import StrEnum
+from typing import Callable, Self
 
-from . import event
-from .effects.base import BaseEffect
 from .minion import Minion
-
-
-class Player(StrEnum):
-    Me = "me"
-    Enemy = "enemy"
-
-    def __str__(self):
-        return self.value.ljust(5)
-
-    def __invert__(self):
-        return Player.Enemy if self == Player.Me else Player.Me
+from .player import Player
 
 
 @dataclass
 class BoardMetadata:
     blood_gems: tuple[int, int] = (1, 1)
     beetles: tuple[int, int] = (2, 2)
+    elemental_bonus: tuple[int, int] = (0, 0)
+
+
+type Effect = Callable[[], list[str]]
 
 
 @dataclass
 class Board:
-    my_minions: list[Minion]
-    enemy_minions: list[Minion]
-
-    event_handlers: defaultdict[event.Event, list[BaseEffect]] = field(
-        default_factory=defaultdict
-    )
-
-    last_turn: Player | None = None
-    metadata: BoardMetadata = field(default_factory=BoardMetadata)
+    minions: dict[Player, list[Minion]]
+    metadata: dict[Player, BoardMetadata]
+    dead_minions: dict[Player, set[Minion]]
+    last_turn: Player | None
 
     @staticmethod
-    def from_minions(my_minions: list[Minion], enemy_minions: list[Minion]) -> "Board":
-        return Board(my_minions, enemy_minions)
+    def from_minions(a: list[Minion], b: list[Minion]) -> "Board":
+        return Board(
+            minions={Player.A: a, Player.B: b},
+            metadata={Player.A: BoardMetadata(), Player.B: BoardMetadata()},
+            dead_minions={Player.A: set(), Player.B: set()},
+            last_turn=None,
+        )
+
+    def apply_effect(self, player: Player, effect: Effect) -> None:
+        pass
+
+    def has_space(self, player: Player) -> bool:
+        return len(self.minions[player]) < 7

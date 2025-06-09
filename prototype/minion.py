@@ -1,10 +1,11 @@
-import random
+from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import Callable
 from uuid import UUID, uuid4
 
 from .dataset import Dataset
-from .effects.base import BaseEffect
+from .deathrattle import Deathrattle, SummonBeetle
 
 
 class Keyword(StrEnum):
@@ -28,8 +29,8 @@ class Minion:
     attack: int
     health: int
     keywords: set[Keyword] = field(default_factory=set)
-    deathrattles: list[BaseEffect] = field(default_factory=list)
     attack_count: int = 0
+    deathrattles: list[Deathrattle] = field(default_factory=list)
 
     def __hash__(self):
         return hash(self.uuid)
@@ -75,6 +76,7 @@ class Minion:
             name=m["name"],
             attack=m["attack"] if attack is None else attack,
             health=m["health"] if health is None else health,
+            deathrattles=deathrattles_from_name(m["name"]),
         )
 
     @staticmethod
@@ -91,3 +93,11 @@ class Minion:
             health=health,
             attack=attack,
         )
+
+
+def deathrattles_from_name(name: str) -> list[Deathrattle]:
+    match name:
+        case "Buzzing Vermin":
+            return [SummonBeetle()]
+        case _:
+            return []

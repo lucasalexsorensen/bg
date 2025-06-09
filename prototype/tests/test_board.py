@@ -4,8 +4,8 @@ from ..minion import Minion
 
 class TestPlayer:
     def test_player(self):
-        assert Player.Me == ~Player.Enemy
-        assert Player.Enemy == ~Player.Me
+        assert Player.A == ~Player.B
+        assert Player.B == ~Player.A
 
 
 class TestBoard:
